@@ -1,0 +1,177 @@
+stages:
+  - build_aws
+  - deploy_aws
+  - build_rc
+  - deploy_rc
+  - build_beta
+  - deploy_beta
+
+variables:
+  IMAGE_NAME: ope/ope.web.frontend.vue
+
+build_aws:
+  stage: build_aws
+  image: node:10.14.1
+  tags:
+    - nodejs
+  script:
+    - echo "CI_COMMIT_REF_NAME':' $CI_COMMIT_REF_NAME"
+    # - ENV=`basename $CI_COMMIT_REF_NAME`
+    - BUILD_NUMBER=`git rev-list HEAD --count`
+    - echo "Build number':' 1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}"
+    - npm install
+    # - npm run build:${ENV}
+    - npm run build:prod
+    - echo "BUILD_NUMBER=${BUILD_NUMBER}" >> .env
+    # - echo "ENV=${ENV}" >> .env
+    - echo "1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}" > dist/version.html
+    - echo "OK" > dist/healthCheck.html
+    - cat .env
+  only:
+    - deploy/online
+  artifacts:
+    name: "publish"
+    expire_in: 10 mins
+    paths:
+      - dist
+      - .env
+      - Dockerfile
+      - nginx.conf
+
+deploy_aws:
+  stage: deploy_aws
+  only:
+    - deploy/online
+  tags:
+    - dotnet 
+  image: docker:stable
+  variables:
+    AWS_ACCESS_KEY_ID: "$AWS_ACCESS_KEY_ID"
+    AWS_SECRET_ACCESS_KEY: "$AWS_SECRET_ACCESS_KEY"
+    AWS_DEFAULT_REGION: "$AWS_DEFAULT_REGION"
+    AWS_REGISTRY_URL: "$AWS_REGISTRY_URL"
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - name: docker:dind
+  before_script:
+    - echo http://dl-cdn.alpinelinux.org/alpine/v3.11/main > /etc/apk/repositories; echo http://dl-cdn.alpinelinux.org/alpine/v3.11/community >> /etc/apk/repositories
+    - apk add --no-cache curl jq python py-pip
+    - pip install awscli
+  script: 
+    - source .env
+    - echo "Build number':' 1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}"
+    # aws login
+    - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+    - docker build -t ${AWS_REGISTRY_URL}/${IMAGE_NAME}:1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID} -t ${AWS_REGISTRY_URL}/${IMAGE_NAME}:latest .
+    - docker push ${AWS_REGISTRY_URL}/${IMAGE_NAME}
+    - ls -al
+
+build_rc:
+  stage: build_rc
+  image: node:10.14.1
+  tags:
+    - nodejs
+  script:
+    - echo "CI_COMMIT_REF_NAME':' $CI_COMMIT_REF_NAME"
+    # - ENV=`basename $CI_COMMIT_REF_NAME`
+    - BUILD_NUMBER=`git rev-list HEAD --count`
+    - echo "Build number':' 1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}"
+    - npm install
+    # - npm run build:${ENV}
+    - npm run build:rc
+    - echo "BUILD_NUMBER=${BUILD_NUMBER}" >> .env
+    # - echo "ENV=${ENV}" >> .env
+    - echo "1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}" > dist/version.html
+    - echo "OK" > dist/healthCheck.html
+    - cat .env
+  only:
+    - deploy/rc
+  artifacts:
+    name: "publish"
+    expire_in: 10 mins
+    paths:
+      - dist
+      - .env
+      - Dockerfile
+      - nginx.conf
+
+deploy_rc:
+  stage: deploy_rc
+  only:
+    - deploy/rc
+  tags:
+    - dotnet 
+  image: docker:stable
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    
+  services:
+    - name: docker:dind
+      command: ["--insecure-registry=10.10.102.26:5000"]
+  script: 
+    - source .env
+    - SHINYA_REGISTRY_HOST=10.10.102.26:5000
+    # - IMAGE=gameapi/gameapi.mgt.frontend-$ENV
+    # - IMAGE=gameapi/gameapi.mgt.frontend
+    - echo "Build number':' 1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}"
+    - docker build -t ${SHINYA_REGISTRY_HOST}/${IMAGE_NAME}:1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID} -t ${SHINYA_REGISTRY_HOST}/${IMAGE_NAME}:latest .
+    - docker push ${SHINYA_REGISTRY_HOST}/${IMAGE_NAME}
+    - ls -al
+
+build_beta:
+  stage: build_beta
+  image: node:10.14.1
+  tags:
+    - nodejs
+  script:
+    - echo "CI_COMMIT_REF_NAME':' $CI_COMMIT_REF_NAME"
+    # - ENV=`basename $CI_COMMIT_REF_NAME`
+    - BUILD_NUMBER=`git rev-list HEAD --count`
+    - echo "Build number':' 1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}"
+    - npm install
+    # - npm run build:${ENV}
+    - npm run build:beta
+    - echo "BUILD_NUMBER=${BUILD_NUMBER}" >> .env
+    # - echo "ENV=${ENV}" >> .env
+    - echo "1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}" > dist/version.html
+    - echo "OK" > dist/healthCheck.html
+    - cat .env
+  only:
+    - deploy/beta
+  artifacts:
+    name: "publish"
+    expire_in: 10 mins
+    paths:
+      - dist
+      - .env
+      - Dockerfile
+      - nginx.conf
+
+deploy_beta:
+  stage: deploy_beta
+  only:
+    - deploy/beta
+  tags:
+    - dotnet 
+  image: docker:stable
+  variables:
+    AWS_ACCESS_KEY_ID: "$AWS_ACCESS_KEY_ID"
+    AWS_SECRET_ACCESS_KEY: "$AWS_SECRET_ACCESS_KEY"
+    AWS_DEFAULT_REGION: "$AWS_DEFAULT_REGION"
+    AWS_REGISTRY_URL: "$AWS_REGISTRY_URL"
+    DOCKER_TLS_CERTDIR: ""
+  services:
+    - name: docker:dind
+  before_script:
+    - echo http://dl-cdn.alpinelinux.org/alpine/v3.11/main > /etc/apk/repositories; echo http://dl-cdn.alpinelinux.org/alpine/v3.11/community >> /etc/apk/repositories
+    - apk add --no-cache curl jq python py-pip
+    - pip install awscli
+  script: 
+    - source .env
+    - echo "Build number':' 1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID}"
+    # aws login
+    - eval $(aws ecr get-login --region $AWS_DEFAULT_REGION --no-include-email)
+    - docker build -t ${AWS_REGISTRY_URL}/${IMAGE_NAME}:1.0.${BUILD_NUMBER}.${CI_PIPELINE_ID} -t ${AWS_REGISTRY_URL}/${IMAGE_NAME}:latest .
+    - docker push ${AWS_REGISTRY_URL}/${IMAGE_NAME}
+    - ls -al
+
