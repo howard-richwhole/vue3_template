@@ -1,4 +1,4 @@
-const bodyParser = require('body-parser')
+const express = require('express')
 const chokidar = require('chokidar')
 const chalk = require('chalk')
 const Mock = require('mockjs')
@@ -23,17 +23,14 @@ function registerRoutes(app) {
   }
   const mocksForServer = _.compact(
     mocks.map(route => {
-      if (!route.url.match(/^-|^#-/))
-        //開頭是"-"不回傳，開頭#的取代掉
-        return responseFake(
-          route.url.replace(/^#/, ''),
-          route.type,
-          route.response,
-        )
+      //開頭是"-"不回傳
+      if (!route.url.match(/^-/)) {
+        return responseFake(route.url, route.type, route.response, route.delay)
+      }
     }),
   )
   for (const mock of mocksForServer) {
-    app[mock.type](mock.url, bodyParser.json(), mock.response)
+    app[mock.type](mock.url, mock.response)
     mockLastIndex = app._router.stack.length
   }
   const mockRoutesLength = Object.keys(mocksForServer).length
@@ -52,15 +49,20 @@ function unregisterRoutes() {
 }
 
 // for mock server
-const responseFake = (url, type, respond) => {
+const responseFake = (url, type, respond, delay) => {
   return {
     url: new RegExp(`${url}`),
     type: type || 'get',
     response(req, res) {
       console.log('request invoke:' + req.path)
-      res.json(
-        Mock.mock(respond instanceof Function ? respond(req, res) : respond),
+      const mockData = Mock.mock(
+        respond instanceof Function ? respond(req, res) : respond,
       )
+      if (_.isNumber(delay)) {
+        setTimeout(() => {
+          res.json(mockData)
+        }, delay)
+      } else res.json(mockData)
     },
   }
 }
@@ -68,12 +70,8 @@ const responseFake = (url, type, respond) => {
 module.exports = {
   proxy,
   server(app) {
-    // parse app.body
-    // https://expressjs.com/en/4x/api.html#req.body
-    // app.use(bodyParser.json())
-    // app.use(bodyParser.urlencoded({
-    //   extended: true
-    // }))
+    app.use(express.json())
+    app.use(express.urlencoded({ extended: false }))
 
     const mockRoutes = registerRoutes(app)
     var mockRoutesLength = mockRoutes.mockRoutesLength
