@@ -6,13 +6,15 @@
     "husky": "npx husky install",
     "dev": "vue-cli-service serve --mode development --open",
     "build:prod": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "api": "node mock/swagger/getSwagger.js"
   },
   "dependencies": {
     "@vee-validate/rules": "^4.0.4",
     "axios": "^0.21.1",
     "core-js": "^3.6.5",
     "gsap": "^3.5.1",
+    "mockjs": "^1.1.0",
     "moment": "^2.29.1",
     "storage-manager-js": "^4.0.4",
     "vee-validate": "^4.1.1",

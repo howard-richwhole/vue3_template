@@ -1,4 +1,6 @@
 'use strict'
+const mockServer = require('./mock/mock-server.js')
+
 const port = 8080
 const name = 'vue3'
 
@@ -22,6 +24,8 @@ module.exports = {
       warning: false,
       errors: true,
     },
+    before: mockServer.server,
+    proxy: mockServer.proxy,
   },
   configureWebpack: {
     name: name,
