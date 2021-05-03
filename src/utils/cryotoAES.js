@@ -33,7 +33,7 @@ export function decrypt(word, keyStr = default_key) {
   try {
     res = JSON.parse(res)
   } catch (e) {
-    return '' || e
+    return 'error' || e
   }
   return res
 }
