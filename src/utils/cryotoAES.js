@@ -32,8 +32,8 @@ export function decrypt(word, keyStr = default_key) {
   let res = CryptoJS.enc.Utf8.stringify(decrypted).toString()
   try {
     res = JSON.parse(res)
-  } catch {
-    //
+  } catch (e) {
+    return '' || e
   }
   return res
 }

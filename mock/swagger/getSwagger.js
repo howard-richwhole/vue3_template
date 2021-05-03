@@ -8,7 +8,7 @@ let schemas
 let paths
 
 function getJson(url) {
-  return axios.get(url).then((data) => {
+  return axios.get(url).then(data => {
     schemas = data.data.components.schemas
     paths = data.data.paths
     // let jsonData = JSON.stringify(data.data.components.schemas)
@@ -67,7 +67,7 @@ getJson('http://10.10.102.10:9091/swagger/H5/swagger.json').then(() => {
     item.url = key
     item.type = 'post'
     item.response = {}
-    _.each(i, (ii) => {
+    _.each(i, ii => {
       try {
         //列出回傳資料
         const rep = ii.responses[200].content['text/json'].schema
@@ -76,8 +76,9 @@ getJson('http://10.10.102.10:9091/swagger/H5/swagger.json').then(() => {
         } else {
           item.response = findRef(rep['$ref'], true)
         }
-      } catch {
+      } catch (e) {
         //錯誤不抓
+        console.log(e)
       }
     })
     res.push(item)
