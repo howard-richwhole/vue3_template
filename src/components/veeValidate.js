@@ -18,36 +18,26 @@ const rulse = {
   wechat: ['请输入正确微信号', /^[a-zA-Z]([-_a-zA-Z0-9]{5,19})+$/],
   chinese: ['仅限定输入中文', /^[\u4E00-\u9FA5]+(·[\u4E00-\u9FA5]+)*$/],
   card: ['支付账号格式不符', /^[0-9]{13,19}$/],
-  pwdConfirm: ['两次输入的密码必须一致', (value, [other]) => value === other],
+  pwdConfirm: ['两次输入的密码必须一致', (value, [pwd]) => value === pwd],
   required: ['必填', required],
   integer: ['请输入整数金额', integer],
   between: ['输入金额已超出上下限', between],
-  min: ['输入内容未满 {{0}} 字元', min],
-}
-
-function replaceVar(msg, ary) {
-  try {
-    const regex = /\{\{\d{1,}\}\}/g
-    const msgAry = _.split(msg, regex)
-    _.each(msg.match(regex), (i, index) => {
-      const target_index = Number(i.replace(/\{|\}/g, ''))
-      msgAry[index] += ary[target_index] || ''
-    })
-    return _.join(msgAry, '')
-  } catch {
-    return msg
-  }
+  min: [(val, [len]) => `输入内容未满 ${len} 字元`, min],
 }
 
 _.each(rulse, ([msg, test], key) => {
-  defineRule(key, (value, other) => {
+  defineRule(key, (value, argAry) => {
     let res = false
     if (test instanceof RegExp) {
       res = test.test(value)
     } else if (test instanceof Function) {
-      res = test(value, other)
+      res = test(value, argAry)
     }
-    return res || replaceVar(msg, other)
+    let resMsg = msg
+    if (msg instanceof Function) {
+      resMsg = msg(value, argAry)
+    }
+    return res || resMsg
   })
 })
 

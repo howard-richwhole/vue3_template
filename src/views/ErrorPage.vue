@@ -1,9 +1,9 @@
-<template>
-  <div>
-    <div>reactive 物件{{ obj }}</div>
-    <div>reactive 物件內的值，直接取用{{ objCount }}</div>
-    <div>轉ref 後取用{{ refObjCount }}</div>
-  </div>
+<template lang="pug">
+div
+  div {{ text }}
+  div reactive 物件{{ obj }}
+  div reactive 物件內的值，直接取用，不會更新，因為非ref - {{ objCount }}
+  div 將內值轉ref後取用，可更新{{ refObjCount }}
 </template>
 
 <script>

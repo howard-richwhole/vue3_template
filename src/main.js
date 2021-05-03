@@ -1,12 +1,14 @@
-import globalRegister from './components'
+import globalComp from './components'
+import globalUtils from './utils'
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import './styles/index.scss'
+import './styles/index.sass'
 
 createApp(App)
   .use(store)
   .use(router)
-  .use(globalRegister)
+  .use(globalComp)
+  .use(globalUtils)
   .mount('#app')
