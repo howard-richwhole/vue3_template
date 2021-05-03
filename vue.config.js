@@ -1,9 +1,8 @@
 'use strict'
-const mockServer = require('./mock/mock-server.js')
-
 const port = 8080
 const name = 'vue3'
 
+const mockServer = require('./mock/mock-server.js')
 const path = require('path')
 function resolve(dir) {
   return path.join(__dirname, dir)
@@ -28,7 +27,7 @@ module.exports = {
     proxy: mockServer.proxy,
   },
   configureWebpack: {
-    name: name,
+    name,
     resolve: {
       alias: {
         '@': resolve('src'),
