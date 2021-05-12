@@ -16,7 +16,7 @@ const timeFormat = (time, opts = {}) => {
  * 加五天 timeAdd('2000-01-01',5,''d) === 2000-01-06
  * @param {Moment | string | Date | number} time
  * @param {Number} dur 間格時間
- * @param {?unit:string,?endUnit:string,?formatInput:string,?formatOutput:string} opts
+ * @param {?unit:string,?endUnit:string,?startUnit:string,?formatInput:string,?formatOutput:string} opts
  *  {String} unit 單位
  *  {String} endUnit 結尾時間單位，不填則不使用； 'd' -> 2000-01-06 23:59:59
  *  {String} formatInput 輸入時間格式
@@ -31,6 +31,7 @@ const timeAdd = (time, dur, opts = {}) => {
   return momentTime
     .add(dur, opts.unit)
     .endOf(opts.endUnit)
+    .startOf(opts.startUnit)
     .format(opts.formatOutput || momentTime._f)
 }
 
