@@ -1,6 +1,6 @@
 'use strict'
 const port = 8080
-const name = 'vue3'
+const name = 'vue3Template'
 
 const mockServer = require('./mock/mock-server.js')
 const path = require('path')
@@ -8,7 +8,7 @@ function resolve(dir) {
   return path.join(__dirname, dir)
 }
 
-module.exports = {
+const vueConfig = {
   publicPath: process.env.VUE_APP_BASE_URL_CDN,
   assetsDir: 'static',
   lintOnSave: process.env.NODE_ENV === 'development',
@@ -23,8 +23,6 @@ module.exports = {
       warning: false,
       errors: true,
     },
-    before: mockServer.server,
-    proxy: mockServer.proxy,
   },
   configureWebpack: {
     name,
@@ -103,3 +101,6 @@ module.exports = {
     //   .end()
   },
 }
+
+mockServer(vueConfig)
+module.exports = vueConfig

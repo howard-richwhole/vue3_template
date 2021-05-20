@@ -66,50 +66,54 @@ const responseFake = (url, type, respond, delay) => {
     },
   }
 }
+function server(app) {
+  app.use(express.json())
+  app.use(express.urlencoded({ extended: false }))
 
-module.exports = {
-  proxy,
-  server(app) {
-    app.use(express.json())
-    app.use(express.urlencoded({ extended: false }))
+  const mockRoutes = registerRoutes(app)
+  var mockRoutesLength = mockRoutes.mockRoutesLength
+  var mockStartIndex = mockRoutes.mockStartIndex
 
-    const mockRoutes = registerRoutes(app)
-    var mockRoutesLength = mockRoutes.mockRoutesLength
-    var mockStartIndex = mockRoutes.mockStartIndex
+  // watch files, hot reload mock server
+  chokidar
+    .watch(mockDir, {
+      ignored: /mock-server|mockXHR|proxy|run|swagger/,
+      ignoreInitial: true,
+    })
+    .on('all', (event, path) => {
+      if (event === 'change' || event === 'add') {
+        try {
+          // 保存proxy的route
+          const proxy_route = app._router.stack.splice(
+            mockStartIndex + mockRoutesLength,
+          )
+          // remove mock routes stack
+          app._router.stack.splice(mockStartIndex, mockRoutesLength)
 
-    // watch files, hot reload mock server
-    chokidar
-      .watch(mockDir, {
-        ignored: /mock-server|mockXHR|proxy|run|swagger/,
-        ignoreInitial: true,
-      })
-      .on('all', (event, path) => {
-        if (event === 'change' || event === 'add') {
-          try {
-            // 保存proxy的route
-            const proxy_route = app._router.stack.splice(
-              mockStartIndex + mockRoutesLength,
-            )
-            // remove mock routes stack
-            app._router.stack.splice(mockStartIndex, mockRoutesLength)
+          // clear routes cache
+          unregisterRoutes()
 
-            // clear routes cache
-            unregisterRoutes()
-
-            const mockRoutes = registerRoutes(app)
-            // 重新註冊proxy
-            app._router.stack = app._router.stack.concat(proxy_route)
-            mockRoutesLength = mockRoutes.mockRoutesLength
-            mockStartIndex = mockRoutes.mockStartIndex
-            console.log(
-              chalk.magentaBright(
-                `\n > Mock Server hot reload success! changed  ${path}`,
-              ),
-            )
-          } catch (error) {
-            console.log(chalk.redBright(error))
-          }
+          const mockRoutes = registerRoutes(app)
+          // 重新註冊proxy
+          app._router.stack = app._router.stack.concat(proxy_route)
+          mockRoutesLength = mockRoutes.mockRoutesLength
+          mockStartIndex = mockRoutes.mockStartIndex
+          console.log(
+            chalk.magentaBright(
+              `\n > Mock Server hot reload success! changed  ${path}`,
+            ),
+          )
+        } catch (error) {
+          console.log(chalk.redBright(error))
         }
-      })
-  },
+      }
+    })
+}
+
+module.exports = function(config) {
+  if (process.argv.includes('serve')) {
+    process.env.VUE_APP_BASE_API = api.replace(/^http(s?):\/\/.*\//, '/')
+    config.devServer.before = server
+    config.devServer.proxy = proxy
+  }
 }
