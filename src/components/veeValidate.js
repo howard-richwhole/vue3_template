@@ -38,7 +38,7 @@ _.each(rulse, ([msg, test], key) => {
       resMsg = msg(value, argAry)
     }
     const allowEmpty = key === 'required' ? false : !value
-    return allowEmpty||res || resMsg
+    return allowEmpty || res || resMsg
   })
 })
 
