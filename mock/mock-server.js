@@ -111,7 +111,7 @@ function server(app) {
 }
 
 module.exports = function(config) {
-  if (process.argv.includes('serve')) {
+  if (process.argv.includes('serve') && !process.env.npm_config_api) {
     process.env.VUE_APP_BASE_API = api.replace(/^http(s?):\/\/.*\//, '/')
     config.devServer.before = server
     config.devServer.proxy = proxy
