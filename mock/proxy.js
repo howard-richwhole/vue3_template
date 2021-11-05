@@ -3,6 +3,7 @@ module.exports = api => {
     '/api': {
       target: api,
       changeOrigin: true,
+      xfwd: false,
       // pathRewrite: { '^/h5': '/app' },
     },
   }

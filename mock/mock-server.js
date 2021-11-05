@@ -21,14 +21,10 @@ function registerRoutes(app) {
     console.log(e)
     //
   }
-  const mocksForServer = _.compact(
-    mocks.map(route => {
-      //開頭是"-"不回傳
-      if (!route.url.match(/^-/)) {
-        return responseFake(route.url, route.type, route.response, route.delay)
-      }
-    }),
-  )
+  const mocksForServer = mocks.map(route => {
+    return responseFake(route.url, route.type, route.response, route.delay)
+  })
+
   for (const mock of mocksForServer) {
     app[mock.type](mock.url, mock.response)
     mockLastIndex = app._router.stack.length
