@@ -26,7 +26,7 @@ function registerRoutes(app) {
   })
 
   for (const mock of mocksForServer) {
-    app[mock.type](mock.url, mock.response)
+    app[mock.type](mock.url, express.json(), mock.response)
     mockLastIndex = app._router.stack.length
   }
   const mockRoutesLength = Object.keys(mocksForServer).length
@@ -63,7 +63,6 @@ const responseFake = (url, type, respond, delay) => {
   }
 }
 function server(app) {
-  app.use(express.json())
   app.use(express.urlencoded({ extended: false }))
 
   const mockRoutes = registerRoutes(app)
