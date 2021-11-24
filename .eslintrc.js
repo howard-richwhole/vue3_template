@@ -28,6 +28,7 @@ module.exports = {
         trailingComma: 'all', // 禁止尾部逗號；eslint => comma-dangle
         jsxBracketSameLine: true, // html > 不單獨一列
         arrowParens: 'avoid', // 箭頭函式 argument 一個時不用括號；eslint => arrow-parens
+        endOfLine: 'auto',
       },
     ],
     'vue/max-attributes-per-line': [

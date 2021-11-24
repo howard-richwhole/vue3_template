@@ -46,13 +46,14 @@
     "script-ext-html-webpack-plugin": "^2.1.5"
   },
   "lint-staged": {
-    "src/**/*": "npm run lint"
+    "src/**/*.{js,vue}": "npm run lint"
   },
   "prettier": {
     "singleQuote": true,
     "semi": false,
     "trailingComma": "all",
     "jsxBracketSameLine": true,
-    "arrowParens": "avoid"
+    "arrowParens": "avoid",
+    "endOfLine": "auto"
   }
 }
